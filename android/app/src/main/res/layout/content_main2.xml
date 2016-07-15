@@ -26,4 +26,25 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/closeAp"
         android:text="设置AP" />
+    <Button
+        android:id="@+id/userList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/setAp"
+        android:text="获取用户列表" />
+    <Button
+        android:id="@+id/userArray"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/userList"
+        android:text="获取用户列表本地接口" />
+
+    <LinearLayout
+        android:id="@+id/container"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/userList"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="77dp"></LinearLayout>
 </RelativeLayout>

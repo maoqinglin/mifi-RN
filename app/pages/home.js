@@ -15,9 +15,20 @@ import {
     Navigator,
 } from 'react-native';
 
+import {
+    carbonStyles,
+    Button,
+} from 'carbon-native';
+
+const cs = StyleSheet.create(carbonStyles);
 var wifiApController = require('../modules/module');
-var i = 0;
 var SettingsView = require('./wifiap-settings.js');
+var UserView = require('./user-manager.js');
+
+var PAGE_NAME = {
+    SETTING: "settings",
+    USER: "usermgt"
+}
 var RCTDeviceEventEmitter = require('RCTDeviceEventEmitter');
 
 var HomeView = React.createClass({
@@ -71,8 +82,13 @@ var HomeView = React.createClass({
                     </View>
                 </View>
 
-                <TouchableHighlight onPress={this._onPress} style={ Styles.button } underlayColor={'#4169e1'}>
+                <TouchableHighlight onPress={()=>{this._onPress(PAGE_NAME.SETTING)}} style={ Styles.button }
+                                    underlayColor={'#66ccff'}>
                     <Text style={Styles.btn_name}>热点设置</Text>
+                </TouchableHighlight>
+                <TouchableHighlight onPress={()=>{this._onPress(PAGE_NAME.USER)}} style={ Styles.button }
+                                    underlayColor={'#66ccff'}>
+                    <Text style={Styles.btn_name}>用户管理</Text>
                 </TouchableHighlight>
             </View>
         )
@@ -96,7 +112,6 @@ var HomeView = React.createClass({
             })
         });
         this.wifiApListener = RCTDeviceEventEmitter.addListener('wifiState', function (wifistate) {
-            ToastAndroid.show('state123wifi = ' + wifistate.state, ToastAndroid.SHORT);
             that.setState({falseSwitchIsOn: wifistate.state})
         });
     },
@@ -128,16 +143,22 @@ var HomeView = React.createClass({
             }
         )
     },
-    _onPress(){
+    _onPress(action){
         const {navigator} = this.props;
         if (navigator) {
-            navigator.push({
-                name: 'settings',
-                page: SettingsView
-            })
+            if (action == PAGE_NAME.SETTING) {
+                navigator.push({
+                    name: PAGE_NAME.SETTING,
+                    page: SettingsView
+                })
+            } else if (action == PAGE_NAME.USER) {
+                navigator.push({
+                    name: PAGE_NAME.USER,
+                    page: UserView
+                })
+            }
         }
     },
-
 });
 
 var Styles = StyleSheet.create({
@@ -182,16 +203,17 @@ var Styles = StyleSheet.create({
     },
     switch: {
         alignSelf: 'flex-start',
-        marginLeft:15,
+        marginLeft: 15,
         transform: [
             {scaleX: 1.8},
             {scaleY: 1.8},
         ],
     },
     btn_name: {
-        fontSize: 16,
+        fontSize: 18,
         textAlign: 'center',
         margin: 10,
+        color: '#fff'
     },
     style_image: {
         borderRadius: 45,
@@ -200,14 +222,14 @@ var Styles = StyleSheet.create({
         alignSelf: 'center',
     },
     button: {
-        height: 56,
+        height: 50,
         width: 200,
-        margin: 20,
+        margin: 10,
         backgroundColor: '#63B8FF',
         borderColor: '#5bc0de',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 45,
+        borderRadius: 5,
     },
 })
 module.exports = HomeView;

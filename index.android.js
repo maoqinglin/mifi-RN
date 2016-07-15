@@ -9,7 +9,6 @@ import {
     AppRegistry,
 } from 'react-native';
 
-//var WifiApProject = require('./app/pages/home.js');
-//var WifiApProject = require('./app/pages/wifiap-settings.js');
 var WifiApProject = require('./app/pages/index.js');
+//var WifiApProject = require('./app/pages/user-manager.js');
 AppRegistry.registerComponent('WifiApProject', () => WifiApProject);

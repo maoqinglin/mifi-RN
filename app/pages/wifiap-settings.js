@@ -106,12 +106,12 @@ var SettingsView = React.createClass({
                     </Picker>
                 </View>
                 <TouchableHighlight
-                    underlayColor='#4169e1'
+                    underlayColor='#66ccff'
                     style={Styles.style_view_button}
                     onPress={()=>{
                              this.saveConfig(this.state.name,this.state.passwd,this.state.security);
                             }}>
-                    <Text style={Styles.textInput}>保存</Text>
+                    <Text style={Styles.save}>保存</Text>
                 </TouchableHighlight>
             </View>
         );
@@ -183,12 +183,12 @@ var Styles = StyleSheet.create({
         width: 120,
     },
     style_view_button: {
-        height: 56,
+        height: 50,
         width: 200,
         margin: 20,
         backgroundColor: '#63B8FF',
         borderColor: '#5bc0de',
-        borderRadius: 45,
+        borderRadius: 5,
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'center',
@@ -199,6 +199,10 @@ var Styles = StyleSheet.create({
     },
     textInput: {
         fontSize: 18,
+    },
+    save: {
+        fontSize: 18,
+        color: '#fff',
     },
     line: {
         height: 2,

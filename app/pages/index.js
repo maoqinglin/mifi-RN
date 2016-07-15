@@ -5,15 +5,10 @@ import React, { Component } from 'react';
 import {
     AppRegistry,
     StyleSheet,
-    View,
-    Text,
-    TouchableOpacity,
     Navigator,
 } from 'react-native';
 
 var HomeView = require('./home.js');
-var SettingsView = require('./wifiap-settings.js');
-
 var WifiApProject = React.createClass({
     configureScenceAndroid: function () {
         return Navigator.SceneConfigs.FadeAndroid;

@@ -9,6 +9,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.HotspotClient;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.provider.Settings;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
@@ -45,6 +47,8 @@ public class WifiApController {
     private static final String METHOD_GET_HOTSPOT_CLIENTS = "getHotspotClients";
     private static final String METHOD_UNLOCK_CLIENT = "unblockClient";
     private static final String METHOD_BLOCK_CLIENT = "blockClient";
+    public static final String USER_MAC_ADDRESS_KEY = "macAddress";
+    public static final String USER_IS_BLOCKED_KEY = "isBlocked";
 
 
     private static WifiApController mInstance;
@@ -203,7 +207,7 @@ public class WifiApController {
         if (wifiApEnable && ((wifiState == WifiManager.WIFI_STATE_ENABLING) ||
                 (wifiState == WifiManager.WIFI_STATE_ENABLED))) {
             mWifiManager.setWifiEnabled(false);
-            if(!DEBUG){
+            if (!DEBUG) {
                 Settings.Global.putInt(cr, HideWifiApField.WIFI_SAVED_STATE, 1);// 需要系统权限
             }
         }
@@ -216,7 +220,7 @@ public class WifiApController {
             }
             if (wifiSavedState == 1) {
                 mWifiManager.setWifiEnabled(true);
-                if(!DEBUG){
+                if (!DEBUG) {
                     Settings.Global.putInt(cr, HideWifiApField.WIFI_SAVED_STATE, 0);
                 }
 
@@ -241,13 +245,13 @@ public class WifiApController {
     }
 
 
-    public List<?> getUserList() {
+    public List<HotspotClient> getUserList() {
 
         WifiManager manager = getWifiManager(mContext);
         try {
             Method method = manager.getClass().getMethod(METHOD_GET_HOTSPOT_CLIENTS);
             method.setAccessible(true);
-            return (List<?>) method.invoke(manager);
+            return (List<HotspotClient>) method.invoke(manager);
         } catch (NoSuchMethodException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -260,17 +264,78 @@ public class WifiApController {
         return null;
     }
 
-    public List<?> getBlockAndUserList() {
-        List<?> userList = getUserList();
+    public WritableArray getUserArray() {
+        List<HotspotClient> userList = getUserList();
+        WritableArray array = Arguments.createArray();
         if (userList != null && !userList.isEmpty()) {
-            int size = userList.size();
-            for (int i = 0; i < size; i++) {
-                Object hotspot = userList.get(i);
-                if (hotspot != null) {
+            for (int i = 0; i < userList.size(); i++) {
+                HotspotClient user = userList.get(i);
+                WritableMap map = Arguments.createMap();
+                map.putBoolean(USER_IS_BLOCKED_KEY, user.isBlocked);
+                map.putString(USER_MAC_ADDRESS_KEY, user.deviceAddress);
+                array.pushMap(map);
+            }
+        }
+        return array;
+    }
+
+    public boolean handleUser(String address, boolean isBlock) {
+        boolean success = false;
+        if (!TextUtils.isEmpty(address)) {
+            List<HotspotClient> userList = getUserList();
+            if (userList != null) {
+                for (int i = 0; i < userList.size(); i++) {
+                    HotspotClient user = userList.get(i);
+                    if (address.equals(user.deviceAddress)) {
+                        if (isBlock) {
+                            success = unBlockUser(user);
+                        } else {
+                            success = blockUser(user);
+                        }
+                        if (success) {
+                            Log.d(TAG, "handleUser 设置成功 address = " + address);
+                            handleWifiApClientsChanged();
+                            break;
+                        }
+                    }
                 }
             }
         }
-        return null;
+        return success;
+    }
+
+    public boolean blockUser(HotspotClient client) {
+        WifiManager manager = getWifiManager(mContext);
+        try {
+            Method method = manager.getClass().getMethod(METHOD_BLOCK_CLIENT, HotspotClient.class);
+            method.setAccessible(true);
+            return (Boolean) method.invoke(manager, client);
+        } catch (NoSuchMethodException e) {
+            // TODO Auto-generated catch blockf
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean unBlockUser(HotspotClient client) {
+        WifiManager manager = getWifiManager(mContext);
+        try {
+            Method method = manager.getClass().getMethod(METHOD_UNLOCK_CLIENT, HotspotClient.class);
+            method.setAccessible(true);
+            return (Boolean) method.invoke(manager, client);
+        } catch (NoSuchMethodException e) {
+            // TODO Auto-generated catch blockf
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private void checkTask() {
@@ -312,6 +377,7 @@ public class WifiApController {
 
     private static class HideWifiApField {
         public static final String WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED";
+        public static final String WIFI_HOTSPOT_CLIENTS_CHANGED_ACTION = "android.net.wifi.WIFI_HOTSPOT_CLIENTS_CHANGED";
         public static final String EXTRA_WIFI_AP_STATE = "wifi_state";
         public static final int WIFI_AP_STATE_DISABLING = 10;
         public static final int WIFI_AP_STATE_DISABLED = 11;
@@ -332,6 +398,8 @@ public class WifiApController {
             if (HideWifiApField.WIFI_AP_STATE_CHANGED_ACTION.equals(action)) {
                 handleWifiApStateChanged(intent.getIntExtra(
                         HideWifiApField.EXTRA_WIFI_AP_STATE, HideWifiApField.WIFI_AP_STATE_FAILED));
+            } else if (HideWifiApField.WIFI_HOTSPOT_CLIENTS_CHANGED_ACTION.equals(action)) {
+                handleWifiApClientsChanged();
             }
         }
     };
@@ -347,7 +415,6 @@ public class WifiApController {
             case HideWifiApField.WIFI_AP_STATE_ENABLING:
                 break;
             case HideWifiApField.WIFI_AP_STATE_ENABLED:
-                Toast.makeText(mContext, "wifiAp enable", Toast.LENGTH_LONG).show();
                 params.putBoolean("state", true);
                 if (mReactContext != null) {
                     sendEvent(mReactContext, "wifiState", params);
@@ -356,7 +423,6 @@ public class WifiApController {
             case HideWifiApField.WIFI_AP_STATE_DISABLING:
                 break;
             case HideWifiApField.WIFI_AP_STATE_DISABLED:
-                Toast.makeText(mContext, "wifiAp disable", Toast.LENGTH_LONG).show();
                 params.putBoolean("state", false);
                 if (mReactContext != null) {
                     sendEvent(mReactContext, "wifiState", params);
@@ -367,8 +433,19 @@ public class WifiApController {
         }
     }
 
+    public void handleWifiApClientsChanged() {
+        WritableMap params = Arguments.createMap();
+//        params.putBoolean("state", false);
+        if (mReactContext != null) {
+            sendEvent(mReactContext, "updateUserList", params);
+        }
+    }
+
     public void registerNetwork() {
-        mContext.registerReceiver(mBroadcastReceiver, new IntentFilter(HideWifiApField.WIFI_AP_STATE_CHANGED_ACTION));
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(HideWifiApField.WIFI_AP_STATE_CHANGED_ACTION);
+        filter.addAction(HideWifiApField.WIFI_HOTSPOT_CLIENTS_CHANGED_ACTION);
+        mContext.registerReceiver(mBroadcastReceiver, filter);
     }
 
     public void unregisterNetwork() {
