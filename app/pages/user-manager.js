@@ -17,15 +17,26 @@ import {
     BackAndroid,
 } from 'react-native';
 
+import {
+    carbonStyles,
+    Button,
+    Content,
+    Item,
+    ItemContent,
+    ItemText,
+} from 'carbon-native';
+
+const cs = StyleSheet.create(carbonStyles);
+
 var wifiApController = require('../modules/module');
 var navigator;
 /*var array = [{"macAddress": "ab:dd:dd:dd:dd:aa", "isBlocked": false}, {
- "macAddress": "cc:dd:dd:dd:dd:aa",
- "isBlocked": false
- }, {"macAddress": "ee:dd:dd:dd:dd:aa", "isBlocked": false}, {
- "macAddress": "ff:dd:dd:dd:dd:aa",
- "isBlocked": false
- }, {"macAddress": "gg:dd:dd:dd:dd:aa", "isBlocked": true}];*/
+    "macAddress": "cc:dd:dd:dd:dd:aa",
+    "isBlocked": false
+}, {"macAddress": "ee:dd:dd:dd:dd:aa", "isBlocked": false}, {
+    "macAddress": "ff:dd:dd:dd:dd:aa",
+    "isBlocked": false
+}, {"macAddress": "gg:dd:dd:dd:dd:aa", "isBlocked": true}];*/
 var RCTDeviceEventEmitter = require('RCTDeviceEventEmitter');
 var UserView = React.createClass({
 
@@ -63,45 +74,38 @@ var UserView = React.createClass({
         var isBlocked = rowData[wifiApController.IS_BLOCKED];
         var address = rowData[wifiApController.ADDRESS];
         return (
-            <View style={Styles.center}>
-                <Text style={Styles.address}>{address}</Text>
-                <TouchableOpacity style={Styles.button}
-                                  onPress={() => this._pressRow(address,isBlocked)}>
-                    <Text style={Styles.name}>{!isBlocked ? "阻止" : "取消封锁"}</Text>
-                </TouchableOpacity>
-            </View>
+            <Item>
+                <ItemContent>
+                    <ItemText>{address}</ItemText>
+                    <View style={Styles.container_btn}>
+                        <Button color="secondary" size="sm" text={!isBlocked ? "阻止" : "取消封锁"}
+                                onPress={() => {this._pressRow(address,isBlocked)}}/>
+                    </View>
+                </ItemContent>
+            </Item>
         );
     },
     _renderSectionHeader(sectionData, sectionID){
         return (
-            <View style={[Styles.center,{backgroundColor : '#63B8FF'}]}>
-                <Text style={Styles.address}>{sectionData}</Text>
-            </View>
+            <Item style={cs.itemDivider}>
+                <ItemContent line={false}>
+                    <Text style={[cs.itemText, cs.itemDividerText]}>{sectionData}</Text>
+                </ItemContent>
+            </Item>
         )
     },
     render: function () {
         return this.state.dataSource ? (
-            <View style={Styles.container}>
-                <TouchableOpacity onPress={this._onBack}>
-                    <Image style={Styles.back}
-                           source={require('../images/back.png')}/>
-                </TouchableOpacity>
-
-                <ListView
-                    style={Styles.listView}
-                    dataSource={this.state.dataSource}
-                    renderRow={this._renderRow}
-                    renderSectionHeader={this._renderSectionHeader}
-                    onEndReachedThreshold={0}
-                    enableEmptySections={true}
-                />
-            </View>
+            <ListView
+                style={Styles.listView}
+                dataSource={this.state.dataSource}
+                renderRow={this._renderRow}
+                renderSectionHeader={this._renderSectionHeader}
+                onEndReachedThreshold={0}
+                enableEmptySections={true}
+            />
         ) : (
             <View style={Styles.container}>
-                <TouchableOpacity onPress={this._onBack}>
-                    <Image style={Styles.back}
-                           source={require('../images/back.png')}/>
-                </TouchableOpacity>
                 <View style={Styles.center}>
                     <Text style={Styles.address}>用户列表为空</Text>
                 </View>
@@ -134,26 +138,26 @@ var UserView = React.createClass({
             }
         );
         /*var dataBlog = {},
-            rowIDs = [[], []],
-            sectionIDs = ["s1", "s2"],
-            unBlockCount = 0;
-        array.map(function (user) {
-                var address = user[wifiApController.ADDRESS];
-                var isBlocked = user[wifiApController.IS_BLOCKED];
-                if (!isBlocked) {
-                    rowIDs[0].push(address);
-                    dataBlog[sectionIDs[0] + ":" + address] = user;
-                    unBlockCount++;
-                } else {
-                    rowIDs[1].push(address);
-                    dataBlog[sectionIDs[1] + ":" + address] = user;
-                }
-            }
-        );
-        dataBlog[sectionIDs[0]] = unBlockCount + "个已连接用户";
-        dataBlog[sectionIDs[1]] = (array.length - unBlockCount) + "个已封锁用户";
+         rowIDs = [[], []],
+         sectionIDs = ["s1", "s2"],
+         unBlockCount = 0;
+         array.map(function (user) {
+         var address = user[wifiApController.ADDRESS];
+         var isBlocked = user[wifiApController.IS_BLOCKED];
+         if (!isBlocked) {
+         rowIDs[0].push(address);
+         dataBlog[sectionIDs[0] + ":" + address] = user;
+         unBlockCount++;
+         } else {
+         rowIDs[1].push(address);
+         dataBlog[sectionIDs[1] + ":" + address] = user;
+         }
+         }
+         );
+         dataBlog[sectionIDs[0]] = unBlockCount + "个已连接用户";
+         dataBlog[sectionIDs[1]] = (array.length - unBlockCount) + "个已封锁用户";
 
-        this.setState({dataSource: this.state.dataSource.cloneWithRowsAndSections(dataBlog, sectionIDs, rowIDs)});*/
+         this.setState({dataSource: this.state.dataSource.cloneWithRowsAndSections(dataBlog, sectionIDs, rowIDs)});*/
     },
     // 点击事件
     _pressRow: function (userAddress:string, isBlock:boolean) {
@@ -172,18 +176,11 @@ var UserView = React.createClass({
          });//测试数据
          this.getUser();*/
     },
-    _onBack(){
-        var {navigator} = this.props;
-        if (navigator) {
-            navigator.pop();
-        }
-    },
 });
 
 var Styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5FCFF',
     },
     center: {
         flex: 1,
@@ -194,11 +191,19 @@ var Styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: '#eee',
     },
+
+    head: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderColor: '#eee',
+    },
     back: {
         margin: 10,
     },
     listView: {
-        paddingTop: 20,
         backgroundColor: '#F5FCFF',
     },
     address: {
@@ -215,15 +220,8 @@ var Styles = StyleSheet.create({
         textAlign: 'center',
         color: '#fff'
     },
-    button: {
-        height: 40,
-        width: 80,
-        margin: 15,
-        backgroundColor: '#63B8FF',
-        borderColor: '#5bc0de',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 5,
+    container_btn: {
+        width: 60,
     },
 });
 

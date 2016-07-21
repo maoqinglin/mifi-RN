@@ -3,21 +3,24 @@
  */
 import React, { Component } from 'react';
 import {
-    AppRegistry,
     StyleSheet,
     SwitchAndroid,
     Text,
     View,
     Image,
-    TextInput,
     ToastAndroid,
-    TouchableHighlight,
     Navigator,
 } from 'react-native';
 
 import {
     carbonStyles,
     Button,
+    List,
+    Content,
+    Item,
+    ItemContent,
+    ItemText,
+    Toggle,
 } from 'carbon-native';
 
 const cs = StyleSheet.create(carbonStyles);
@@ -46,29 +49,29 @@ var HomeView = React.createClass({
     render: function () {
         return (
             <View style={Styles.container}>
-                <Image
-                    style={Styles.style_image}
-                    source={require('../images/wifi.jpg')}/>
-                <View style={Styles.state_container}>
-                    <View style={Styles.row_container}>
-                        <Text style={[Styles.name,Styles.text_align_right]}>
-                            热点名称:
-                        </Text>
-                        <Text style={[Styles.name,Styles.text_align_left]}>
-                            {this.state.config.name}
-                        </Text>
-                    </View>
-                    <View style={Styles.row_container}>
-                        <Text style={[Styles.name,Styles.text_align_right]}>热点密码:</Text>
-                        <Text style={[Styles.name,Styles.text_align_left]}>
-                            {this.state.config.passwd}
-                        </Text>
-                    </View>
-                    <View style={Styles.row_container}>
-                        <Text style={[Styles.switch_name,Styles.text_align_right]}>热点状态:</Text>
-                        <View style={Styles.switch_container}>
-                            <SwitchAndroid
-                                onValueChange={(value) =>{
+                <Content style={Styles.state_container}>
+                    <Image
+                        style={Styles.style_image}
+                        source={require('../images/wifi.jpg')}/>
+                    <List>
+                        <Item>
+                            <ItemContent>
+                                <ItemText>热点名称</ItemText>
+                                <ItemText style={cs.textRight}>{this.state.config.name}</ItemText>
+                            </ItemContent>
+                        </Item>
+                        <Item>
+                            <ItemContent>
+                                <ItemText>热点密码</ItemText>
+                                <ItemText style={cs.textRight}>{this.state.config.passwd}</ItemText>
+                            </ItemContent>
+                        </Item>
+                        <Item>
+                            <ItemContent style={cs.itemLast}>
+                                <ItemText>热点状态</ItemText>
+                                <Toggle
+                                    color="energized"
+                                    onValueChange={(value) =>{
                         if(value){
                             wifiApController.openWifiAp();
                         }else{
@@ -76,20 +79,20 @@ var HomeView = React.createClass({
                         }
                         this.setState({falseSwitchIsOn: value});}
                     }
-                                style={Styles.switch}
-                                value={this.state.falseSwitchIsOn}/>
-                        </View>
+                                    style={Styles.switch}
+                                    value={this.state.falseSwitchIsOn}
+                                />
+                            </ItemContent>
+                        </Item>
+                    </List>
+                    <View style={Styles.container_btn}>
+                        <Button color="secondary" text="热点设置" onPress={() => {this._onPress(PAGE_NAME.SETTING)}}/>
                     </View>
-                </View>
+                    <View style={Styles.container_btn}>
+                        <Button color="secondary" text="用户管理" onPress={() => {this._onPress(PAGE_NAME.USER)}}/>
+                    </View>
+                </Content>
 
-                <TouchableHighlight onPress={()=>{this._onPress(PAGE_NAME.SETTING)}} style={ Styles.button }
-                                    underlayColor={'#66ccff'}>
-                    <Text style={Styles.btn_name}>热点设置</Text>
-                </TouchableHighlight>
-                <TouchableHighlight onPress={()=>{this._onPress(PAGE_NAME.USER)}} style={ Styles.button }
-                                    underlayColor={'#66ccff'}>
-                    <Text style={Styles.btn_name}>用户管理</Text>
-                </TouchableHighlight>
             </View>
         )
     },
@@ -149,12 +152,14 @@ var HomeView = React.createClass({
             if (action == PAGE_NAME.SETTING) {
                 navigator.push({
                     name: PAGE_NAME.SETTING,
-                    page: SettingsView
+                    page: SettingsView,
+                    title: "热点设置"
                 })
             } else if (action == PAGE_NAME.USER) {
                 navigator.push({
                     name: PAGE_NAME.USER,
-                    page: UserView
+                    page: UserView,
+                    title: "用户管理"
                 })
             }
         }
@@ -166,70 +171,31 @@ var Styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#F5FCFF',
     },
-
     state_container: {
-        alignItems: 'center',
-        justifyContent: 'center',
+        flex: 1,
         marginTop: 50,
-
-    },
-    row_container: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    name: {
-        flex: 1,
-        fontSize: 16,
-        margin: 10,
-    },
-    text_align_left: {
-        textAlign: 'left',
-    },
-    text_align_right: {
-        textAlign: 'right',
-    },
-    switch_name: {
-        flex: 1,
-        fontSize: 16,
-        margin: 10,
-    },
-
-    switch_container: {
-        flex: 1,
-        margin: 10,
+        width: 300,
+        height:120,
     },
     switch: {
-        alignSelf: 'flex-start',
-        marginLeft: 15,
+        alignSelf: 'center',
         transform: [
             {scaleX: 1.8},
             {scaleY: 1.8},
         ],
-    },
-    btn_name: {
-        fontSize: 18,
-        textAlign: 'center',
-        margin: 10,
-        color: '#fff'
     },
     style_image: {
         borderRadius: 45,
         height: 70,
         width: 70,
         alignSelf: 'center',
+        marginBottom:30,
     },
-    button: {
-        height: 50,
-        width: 200,
-        margin: 10,
-        backgroundColor: '#63B8FF',
-        borderColor: '#5bc0de',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 5,
+    container_btn: {
+        width: 280,
+        marginTop: 20,
+        alignSelf: 'center',
     },
 })
 module.exports = HomeView;

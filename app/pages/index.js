@@ -6,8 +6,12 @@ import {
     AppRegistry,
     StyleSheet,
     Navigator,
+    TouchableOpacity,
+    View,
+    Text,
 } from 'react-native';
 
+import Icon from 'react-native-vector-icons/MaterialIcons';
 var HomeView = require('./home.js');
 var WifiApProject = React.createClass({
     configureScenceAndroid: function () {
@@ -27,22 +31,67 @@ var WifiApProject = React.createClass({
         var renderScene = this.renderSceneAndroid;
         return (
             <Navigator
+                style={styles.container}
                 debugOverlay={false}
-                initialRoute={{ name: 'home', page:defaultPage}}
+                sceneStyle={{ paddingTop: 56 }}
+                initialRoute={{ name: 'home', page:defaultPage,title:"WLAN热点管理"}}
                 configureScence={configureScence }
                 renderScene={renderScene}
+                navigationBar={
+          <Navigator.NavigationBar
+            style={styles.navbar}
+            routeMapper={{
+              LeftButton: (route, navigator, index) => {
+                if (index === 0) {
+                  return null;
+                }
+                return (
+                  <TouchableOpacity
+                    onPress={() => navigator.pop()}
+                    style={styles.navbarBackButton}
+                  >
+                    <Icon name="arrow-back" size={28} color="#fff" />
+                  </TouchableOpacity>
+                );
+              },
+              RightButton: () => null,
+              Title: (route) => (
+                <View style={styles.navbarTitleWrap}>
+                  <Text style={styles.navbarTitle}>
+                    {route.title}
+                  </Text>
+                </View>
+              ),
+            }}
+          />
+        }
             />
         );
     }
 });
 
 var styles = StyleSheet.create({
-    button: {
-        height: 56,
-        margin: 10,
-        backgroundColor: '#cad6c5',
-        justifyContent: 'center',
+    container: {
+        flex: 1,
+    },
+    navbar: {
+        backgroundColor: '#3A3A3A',
+    },
+    navbarTitleWrap: {
+        flex: 1,
+        flexDirection: 'row',
         alignItems: 'center',
+        alignSelf:'center',
+        marginLeft:-60,
+    },
+    navbarTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    navbarBackButton: {
+        paddingHorizontal: 10,
+        paddingVertical: 15,
     },
 });
 

@@ -9,14 +9,14 @@ import {
     Picker,
     Text,
     View,
-    Image,
     TextInput,
     ToastAndroid,
     BackAndroid,
-    TouchableHighlight,
-    TouchableOpacity,
+    PixelRatio,
 } from 'react-native';
-
+import {
+    Button,
+} from 'carbon-native';
 var wifiApController = require('../modules/module');
 var SECURITY = {
     WPA2_PSK: 4,
@@ -47,77 +47,118 @@ var SettingsView = React.createClass({
             passwd: "",
             security: "0",
             initState: true,
+            focused: false,
         };
     },
     render: function () {
         return (
             <View style={Styles.container}>
-                <TouchableOpacity onPress={this._onPress}>
-                    <Image style={Styles.back}
-                           source={require('../images/back.png')}/>
-                </TouchableOpacity>
-                <View style={Styles.config_container}>
-                    <Text style={Styles.textInputTitle}>
-                        热点名称
-                    </Text>
-                    <TextInput
-                        style={Styles.textInput}
-                        placeholder='SnailGame'
-                        numberOfLines={1}
-                        autoFocus={true}
-                        value={this.state.name}
-                        maxLength={limit}
-                        underlineColorAndroid={'transparent'}
-                        onChangeText={(text) => {
+                <View style={Styles.rowContainer}>
+                    <View style={Styles.row}>
+                        <Text
+                            numberOfLines={1}
+                            style={Styles.textInputTitleInline}
+                        >热点名称</Text>
+                        <TextInput
+                            ref='input'
+                            style={Styles.textInputInline}
+                            onFocus={this.onFocus}
+                            onBlur={this.onBlur}
+                            onChangeText={(text) => {
                                 this.setState({name:text});
                             }}
-                    />
-                    <View style={Styles.line}/>
-                    <Text style={Styles.textInputTitle}>
-                        密码
-                    </Text>
-                    <TextInput
-                        style={Styles.textInput}
-                        placeholder=''
-                        numberOfLines={1}
-                        underlineColorAndroid={'transparent'}
-                        value={this.state.passwd}
-                        secureTextEntry={true}
-                        onChangeText={(text) => {
+                            value={this.state.name}
+                        />
+                    </View>
+                    {this._renderUnderline()}
+                </View>
+
+                <View style={Styles.rowContainer}>
+                    <View style={Styles.row}>
+                        <Text
+                            numberOfLines={1}
+                            style={Styles.textInputTitleInline}
+                        >热点密码</Text>
+                        <TextInput
+                            ref='input'
+                            style={Styles.textInputInline}
+                            secureTextEntry={true}
+                            onFocus={this.onFocus}
+                            onBlur={this.onBlur}
+                            onChangeText={(text) => {
                                 this.setState({passwd:text});
                             }}
-                    />
-                    <View style={Styles.line}/>
-                    <Text style={Styles.textInputTitle}>加密方式</Text>
-                    <Picker
-                        style={Styles.picker}
-                        mode="dropdown"
-                        selectedValue={this.state.security.toString()}
-                        onValueChange={(value)=>{
+                            value={this.state.passwd}
+                        />
+                    </View>
+                    {this._renderUnderline()}
+                </View>
+                <View style={Styles.rowContainer}>
+                    <View style={Styles.row}>
+                        <Text
+                            numberOfLines={1}
+                            style={Styles.textInputTitleInline}
+                        >加密方式</Text>
+                        <Picker
+                            style={Styles.picker}
+                            mode="dropdown"
+                            selectedValue={this.state.security.toString()}
+                            onValueChange={(value)=>{
                         if(!this.state.initState){
                             this.setState({security:value});
                         }else{
                             this.setState({initState:false});
                         }
                             }}
-                    >
-                        <Item label="NONE" value="0"/>
-                        <Item label="WPA2 PSK" value="4"/>
-                    </Picker>
+                        >
+                            <Item label="NONE" value="0"/>
+                            <Item label="WPA2 PSK" value="4"/>
+                        </Picker>
+                    </View>
                 </View>
-                <TouchableHighlight
-                    underlayColor='#66ccff'
-                    style={Styles.style_view_button}
-                    onPress={()=>{
-                             this.saveConfig(this.state.name,this.state.passwd,this.state.security);
-                            }}>
-                    <Text style={Styles.save}>保存</Text>
-                </TouchableHighlight>
+
+                <View style={Styles.container_btn}>
+                    <Button color="secondary" text="保存"
+                            onPress={() => {this.saveConfig(this.state.name,this.state.passwd,this.state.security)}}/>
+                </View>
             </View>
         );
-        var limit = 20;
+    },
+    _renderUnderline() {
+        if (this.state.focused === false) {
+            return (
+                <View
+                    style={[Styles.underline, Styles.underlineIdle]}
+                />
+            );
+        }
+        return (
+            <View
+                style={[Styles.underline, Styles.underlineFocused]}
+            />
+        );
+    },
+    onFocus() {
+        this.setState({
+            focused: true,
+        });
+        /* let oldText = this.state.value;
+         let newText = this.props.onTextInputFocus(this.state.value);
+         if (newText !== oldText) {
+         this._onChange(newText);
+         }*/
     },
 
+    onBlur() {
+        this.setState({
+            focused: false,
+        });
+        //this.props.onTextInputBlur(this.state.value);
+    },
+    handleValueChange(values) {
+        console.log('handleValueChange', values)
+        this.setState({form: values})
+    },
     _onPress(){
         var {navigator} = this.props;
         if (navigator) {
@@ -170,45 +211,57 @@ var SettingsView = React.createClass({
 var Styles = StyleSheet.create({
     container: {
         flex: 1,
+        paddingTop: 30,
         backgroundColor: '#F5FCFF',
     },
-
-    config_container: {
-        margin: 50,
-    },
-    back: {
-        margin: 10,
-    },
     picker: {
-        width: 120,
+        flex:1
     },
-    style_view_button: {
-        height: 50,
-        width: 200,
-        margin: 20,
-        backgroundColor: '#63B8FF',
-        borderColor: '#5bc0de',
-        borderRadius: 5,
-        justifyContent: 'center',
-        alignItems: 'center',
+    container_btn: {
+        width: 280,
+        marginTop: 30,
         alignSelf: 'center',
     },
+    rowContainer: {
+        backgroundColor: '#FFF',
+        borderBottomWidth: 1 / PixelRatio.get(),
+        borderColor: '#c8c7cc',
+        paddingLeft: 20,
+    },
+    row: {
+        flexDirection: 'row',
+        height: 44,
+        alignItems: 'center',
+    },
+    textInputTitleInline: {
+        width: 110,
+        fontSize: 15,
+        color: '#000',
+        paddingLeft: 10,
+    },
+    textInputInline: {
+        fontSize: 15,
+        flex: 1,
+        height: 40,// @todo should be changed if underlined
+        marginTop: 2,
+    },
+    titleContainer: {
+        paddingTop: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     textInputTitle: {
-        fontSize: 16,
+        fontSize: 13,
         color: '#333',
+        paddingLeft: 10,
+        flex: 1
     },
     textInput: {
-        fontSize: 18,
+        fontSize: 15,
+        flex: 1,
+        height: 40,
+        marginLeft: 40,
     },
-    save: {
-        fontSize: 18,
-        color: '#fff',
-    },
-    line: {
-        height: 2,
-        backgroundColor: '#f4f4f4',
-        marginTop: -10,
-    }
 });
 
 module.exports = SettingsView;

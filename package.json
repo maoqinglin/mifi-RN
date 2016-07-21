@@ -8,6 +8,8 @@
   "dependencies": {
     "react": "15.1.0",
     "react-native": "^0.28.0",
+    "react-native-gifted-form": "0.0.9",
+    "react-native-vector-icons": "^2.0.3",
     "rn-bootstrap-buttons": "^1.0.4"
   }
 }
