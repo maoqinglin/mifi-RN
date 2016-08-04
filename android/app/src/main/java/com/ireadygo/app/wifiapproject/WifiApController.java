@@ -54,6 +54,7 @@ public class WifiApController {
     private static WifiApController mInstance;
     private MyTimerCheck mTimerCheck;
     public static final boolean DEBUG = false;
+    private static final String WIFI_AP_CHECKED_ACTION = "com.android.intent.ireadygo.app.wifiap.enable";
 
     private WifiApController(Context context) {
         mContext = context;
@@ -481,5 +482,11 @@ public class WifiApController {
         } catch (RuntimeException e) {
             Log.e(TAG, e.getMessage());
         }
+    }
+
+    public void notifyWifiApChecked(boolean isChecked){
+        Intent intent = new Intent(WIFI_AP_CHECKED_ACTION);
+        intent.putExtra("checked", isChecked);
+        mContext.sendBroadcast(intent);
     }
 }

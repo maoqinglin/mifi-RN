@@ -53,11 +53,13 @@ public class WifiApModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void openWifiAp() {
         WifiApController.getInstance(mContext).openWifiAp();
+        WifiApController.getInstance(mContext).notifyWifiApChecked(true);
     }
 
     @ReactMethod
     public void closeWifiAp() {
         WifiApController.getInstance(mContext).closeWifiAp(mContext);
+        WifiApController.getInstance(mContext).notifyWifiApChecked(false);
     }
 
     @ReactMethod

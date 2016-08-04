@@ -10,6 +10,7 @@ import {
     Image,
     ToastAndroid,
     Navigator,
+    TouchableOpacity,
 } from 'react-native';
 
 import {
@@ -39,7 +40,8 @@ var HomeView = React.createClass({
         this.getState();
         this.getConfig();
         return {
-            falseSwitchIsOn: false,
+            isWifiApOpen: false,
+            url: require('../images/wifi_ap_open.png'),
             config: {
                 name: "SnailGame",
                 passwd: ""
@@ -50,9 +52,15 @@ var HomeView = React.createClass({
         return (
             <View style={Styles.container}>
                 <Content style={Styles.state_container}>
-                    <Image
-                        style={Styles.style_image}
-                        source={require('../images/wifi.jpg')}/>
+                    <TouchableOpacity
+                        style={Styles.touch}
+                        activeOpacity={1}
+                        onPress={()=>this.changeWifiAp()}
+                    >
+                        <Image
+                            style={Styles.style_image}
+                            source={this.state.url}/>
+                    </TouchableOpacity>
                     <List>
                         <Item>
                             <ItemContent>
@@ -72,15 +80,13 @@ var HomeView = React.createClass({
                                 <Toggle
                                     color="energized"
                                     onValueChange={(value) =>{
-                        if(value){
-                            wifiApController.openWifiAp();
-                        }else{
-                            wifiApController.closeWifiAp();
+                        this.changeWifiAp();
+                        this.updateWifiApState(value);
                         }
-                        this.setState({falseSwitchIsOn: value});}
+
                     }
                                     style={Styles.switch}
-                                    value={this.state.falseSwitchIsOn}
+                                    value={this.state.isWifiApOpen}
                                 />
                             </ItemContent>
                         </Item>
@@ -92,14 +98,33 @@ var HomeView = React.createClass({
                         <Button color="secondary" text="用户管理" onPress={() => {this._onPress(PAGE_NAME.USER)}}/>
                     </View>
                 </Content>
-
             </View>
         )
     },
+    changeWifiAp: function () {
+        var isOpen = this.state.isWifiApOpen;
+        this.updateWifiApState(!isOpen);//立即更新状态
+        if (!isOpen) {
+            wifiApController.openWifiAp();
+        } else {
+            wifiApController.closeWifiAp();
+        }
+    },
+    changeWifiApBg: function (isOpen) {
+        if (isOpen) {
+            this.setState({url: require('../images/wifi_ap_open.png')});
+        } else {
+            this.setState({url: require('../images/wifi_ap_closed.png')});
+        }
+    },
     getState: function () {
         wifiApController.getWifiApState((state)=> {
-            this.setState({falseSwitchIsOn: state})
+            this.updateWifiApState(state);
         });
+    },
+    updateWifiApState: function (state) {
+        this.setState({isWifiApOpen: state});
+        this.changeWifiApBg(state);
     },
     componentDidMount(){
         var that = this;
@@ -115,20 +140,13 @@ var HomeView = React.createClass({
             })
         });
         this.wifiApListener = RCTDeviceEventEmitter.addListener('wifiState', function (wifistate) {
-            that.setState({falseSwitchIsOn: wifistate.state})
+            that.updateWifiApState(wifistate.state);
         });
     },
     componentWillUnmount(){
         // 移除 一定要写
         this.listener.remove();
         this.wifiApListener.remove();
-    },
-    getName: function () {
-        wifiApController.getWifiApName(
-            (wifiApName)=> {
-                this.setState({name: wifiApName});
-            }
-        )
     },
     getConfig(){
         wifiApController.getWifiApConfig(
@@ -174,23 +192,30 @@ var Styles = StyleSheet.create({
     },
     state_container: {
         flex: 1,
-        marginTop: 50,
+        marginTop: 30,
         width: 300,
-        height:120,
+        height: 120,
     },
     switch: {
         alignSelf: 'center',
         transform: [
-            {scaleX: 1.8},
-            {scaleY: 1.8},
+            {scaleX: 1.5},
+            {scaleY: 1.5},
         ],
     },
-    style_image: {
-        borderRadius: 45,
-        height: 70,
-        width: 70,
+    touch: {
+        height: 100,
+        width: 100,
+        alignItems: 'center',
+        justifyContent: 'center',
         alignSelf: 'center',
-        marginBottom:30,
+        marginBottom: 10,
+    },
+    style_image: {
+        height: 80,
+        width: 80,
+        borderRadius:45,
+        alignSelf: 'center',
     },
     container_btn: {
         width: 280,
